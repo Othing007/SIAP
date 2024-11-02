@@ -1,35 +1,44 @@
+<?php
+session_start();
+require_once '../config.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
+
+    $stmt = $conn->prepare("SELECT id, role, password FROM users WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 1) {
+        $user = $result->fetch_assoc();
+        if (password_verify($password, $user['password'])) {
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['role'] = $user['role'];
+            header("Location: dashboard.php");
+            exit;
+        } else {
+            $error = "Password salah.";
+        }
+    } else {
+        $error = "Username tidak ditemukan.";
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SIAP - Login</title>
-  <link rel="stylesheet" href="../assets/css/styles.css">
+    <meta charset="UTF-8">
+    <title>Login</title>
 </head>
 <body>
-  <div class="login-container">
-    <div class="login-card">
-      <h2>Welcome to SIAP</h2>
-      <form id="loginForm">
-        <div class="form-group">
-          <label for="username">Username</label>
-          <input type="text" id="username" name="username" required>
-        </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password" required>
-        </div>
-        <div class="form-group">
-          <label>
-            <input type="checkbox" name="rememberMe"> Remember Me
-          </label>
-        </div>
-        <button type="submit" class="btn btn-primary">Login</button>
-      </form>
-      <div id="errorMessage" class="error-message"></div>
-    </div>
-  </div>
-
-  <script src="../assets/js/login.js"></script>
+    <form method="POST">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit">Login</button>
+    </form>
+    <?php if (isset($error)) echo "<p>$error</p>"; ?>
 </body>
 </html>

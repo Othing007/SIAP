@@ -1,0 +1,11 @@
+@media (max-width: 768px) {
+    aside nav ul {
+        display: flex;
+        flex-direction: column;
+    }
+
+    table, th, td {
+        display: block;
+        width: 100%;
+    }
+}
